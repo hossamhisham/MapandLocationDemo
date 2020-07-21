@@ -24,7 +24,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,6 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     LocationManager locationManager;
     LocationListener locationListener;
+    String json;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -135,7 +142,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double longitude = location.getLongitude();
                 Gson gson = new Gson();
                 UserLocation locationUpdate = new UserLocation(address, latitude, longitude);
-                String json =gson.toJson(locationUpdate);
+                json =gson.toJson(locationUpdate);
+               // PostData();
+
 
             }
 
@@ -175,4 +184,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
+
+   /* private void PostData() {
+
+        URL url2 = new URL("https://whispering-chamber-23002.herokuapp.com/create");
+        HttpURLConnection urlConnection = (HttpURLConnection) url2.openConnection();
+        try {
+            urlConnection.setDoOutput(true);
+            urlConnection.setChunkedStreamingMode(0);
+
+            OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+            writeStream(out);
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            //readStream(in);
+        } finally {
+            urlConnection.disconnect();
+        }
+
+
+    }
+    private void writeStream(OutputStream out) {
+        out.write(json.getBytes());
+        out.flush();
+    }
+*/
+ /* recieve
+                URL url = new URL("https://whispering-chamber-23002.herokuapp.com/create");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    readStream(in);
+                } finally {
+                    urlConnection.disconnect();
+                }*/
+
 }
