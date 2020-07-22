@@ -143,7 +143,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Gson gson = new Gson();
                 UserLocation locationUpdate = new UserLocation(address, latitude, longitude);
                 json =gson.toJson(locationUpdate);
-               // PostData();
+                
+                new SendDataToServer().execute(String.valueOf(json));
 
 
             }
@@ -185,37 +186,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-   /* private void PostData() {
-
-        URL url2 = new URL("https://whispering-chamber-23002.herokuapp.com/create");
-        HttpURLConnection urlConnection = (HttpURLConnection) url2.openConnection();
+    private String readStream(InputStream is) {
         try {
-            urlConnection.setDoOutput(true);
-            urlConnection.setChunkedStreamingMode(0);
-
-            OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-            writeStream(out);
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            //readStream(in);
-        } finally {
-            urlConnection.disconnect();
+          ByteArrayOutputStream bo = new ByteArrayOutputStream();
+          int i = is.read();
+          while(i != -1) {
+            bo.write(i);
+            i = is.read();
+          }
+          return bo.toString();
+        } catch (IOException e) {
+          return "";
         }
-
-
     }
-    private void writeStream(OutputStream out) {
-        out.write(json.getBytes());
-        out.flush();
-    }
-*/
- /* recieve
-                URL url = new URL("https://whispering-chamber-23002.herokuapp.com/create");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                try {
-                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    readStream(in);
-                } finally {
-                    urlConnection.disconnect();
-                }*/
 
+    class SendDataToServer extends AsyncTask <String,Void,Void>{
+        @Override
+        private void doInBackground(String... json) {
+            URL postURL = new URL("https://whispering-chamber-23002.herokuapp.com/create");
+            HttpURLConnection urlConnection = (HttpURLConnection) postURL.openConnection();
+            try {
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+    
+                // Writes json characters not bytes
+                Writer writer = new BufferedWriter(urlConnection.getOutputStream(),"UTF-8");
+                writer.write(json[0]);
+                writer.flush();
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                
+                // Should output success
+                String response = readStream(in);
+            
+            } finally {
+                urlConnection.disconnect();
+            }
+        }
+        
+    }
+    class GetDataFromServer extends AsyncTask <String,Void,Void>{
+        @Override
+        private void doInBackground() {
+            URL url = new URL("https://whispering-chamber-23002.herokuapp.com/search/users");
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            try {
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                String JsonResponse = readStream(in);
+            } finally {
+                urlConnection.disconnect();
+            }
+    
+        }
+    }
 }
+
