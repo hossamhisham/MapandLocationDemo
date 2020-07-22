@@ -16,6 +16,8 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -25,6 +27,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
+import java.io.*;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Writer;
@@ -32,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
@@ -204,42 +209,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     class SendDataToServer extends AsyncTask <String,Void,Void>{
         @Override
-        private void doInBackground(String... json) {
-            URL postURL = new URL("https://whispering-chamber-23002.herokuapp.com/create");
-            HttpURLConnection urlConnection = (HttpURLConnection) postURL.openConnection();
+        public Void doInBackground(String... json) {
+            URL postURL = null;
+            HttpURLConnection urlConnection = null;
             try {
+                postURL = new URL("https://whispering-chamber-23002.herokuapp.com/create");
+
+                urlConnection = (HttpURLConnection) postURL.openConnection();
                 urlConnection.setDoOutput(true);
                 urlConnection.setRequestProperty("Content-Type", "application/json");
                 urlConnection.setRequestProperty("Accept", "application/json");
-    
+
                 // Writes json characters not bytes
-                Writer writer = new BufferedWriter(urlConnection.getOutputStream(),"UTF-8");
+                OutputStream os = urlConnection.getOutputStream() ;
+                Writer writer = new BufferedWriter(new OutputStreamWriter(os));
                 writer.write(json[0]);
                 writer.flush();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                
+
                 // Should output success
                 String response = readStream(in);
-            
+            }catch (IOException e){
+                e.printStackTrace();
+
             } finally {
+                if ( urlConnection != null)
                 urlConnection.disconnect();
+
+                return null;
             }
         }
         
     }
-    class GetDataFromServer extends AsyncTask <String,Void,Void>{
-        @Override
-        private void doInBackground() {
-            URL url = new URL("https://whispering-chamber-23002.herokuapp.com/search/users");
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            try {
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                String JsonResponse = readStream(in);
-            } finally {
-                urlConnection.disconnect();
-            }
-    
-        }
-    }
+//    class GetDataFromServer extends AsyncTask <String,Void,Void>{
+//        @Override
+//        private void doInBackground() {
+//            URL url = new URL("https://whispering-chamber-23002.herokuapp.com/search/users");
+//            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+//            try {
+//                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+//                String JsonResponse = readStream(in);
+//            } finally {
+//                urlConnection.disconnect();
+//            }
+//
+//        }
+//    }
 }
 
